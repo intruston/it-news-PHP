@@ -2,11 +2,26 @@
 require 'vendor/autoload.php';
 require 'config.php';
 
+// Set CORS headers to allow requests from any origin
+header("Access-Control-Allow-Origin: *");
+header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");
+header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With");
+
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    http_response_code(200);
+    exit();
+}
+
 // GET latest 10 news articles
 if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['latest'])) {
     try {
-        $latestArticles = $collection->find([], ['limit' => 10, 'sort' => ['date' => -1]]);
+        $latestArticles = $collection->find([], ['limit' => 10, 'sort' => ['publishing_time' => -1]]);
         $articles = iterator_to_array($latestArticles);
+        // Convert ObjectIDs to plain strings in the result
+        $articles = array_map(function($article) {
+            $article['_id'] = (string) $article['_id'];
+            return $article;
+        }, $articles);
         echo json_encode($articles);
     } catch (Exception $e) {
         http_response_code(500);
@@ -19,6 +34,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['all'])) {
     try {
         $allArticles = $collection->find();
         $articles = iterator_to_array($allArticles);
+        // Convert ObjectIDs to plain strings in the result
+        $articles = array_map(function($article) {
+            $article['_id'] = (string) $article['_id'];
+            return $article;
+        }, $articles);
         echo json_encode($articles);
     } catch (Exception $e) {
         http_response_code(500);
@@ -61,12 +81,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 http_response_code(400);
                 echo json_encode(['errors' => $errors]);
             } else {
+                $currentDateTime = date('Y-m-d\TH:i:s\Z'); // Get current time in string format
                 // Create a new document in the MongoDB collection
                 $newArticle = [
                     'article' => $article,
                     'important' => $important,
                     'author' => $author,
-                    'publishing_time' => new MongoDB\BSON\UTCDateTime(),
+                    'publishing_time' => $currentDateTime,
                     'image' => $image,
                     'text' => $text
                 ];
