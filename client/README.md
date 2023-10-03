@@ -8,44 +8,8 @@ Check out the deployed app [here](https://it-news-project.netlify.app/).
 - **Search**: Enables users to search for news articles using keywords. The search is powered by the Fuse.js library.
 - **NewsFeed**: Displays all news and groups the news articles by date. It also provides a "Load More" button that allows the user to view older news articles if available.
 
-### Custom HTTPS Endpoints for MongoDB
-In addition to the application itself, the project includes custom HTTPS endpoints for MongoDB. The endpoints are set up using MongoDB's Stitch service, which provides a simple way to integrate a database with a frontend application without needing to build and maintain a backend server. 
-
-Endpoint for retrieving the latest 10 news articles:
-https://eu-central-1.aws.data.mongodb-api.com/app/data-owhxg/endpoint/news
-
-Here's the function, I use for this endpoint:
-```javascript
-exports = async function() {
-  const collection = context.services.get("Cluster0").db("it-news").collection("articles");
-
-  try {
-    const findResult = await collection.find();
-    return findResult;
-  } catch (err) {
-    console.log("Error occurred while executing find operation:", err.message);
-    return err.message;
-  }
-};
-```
-
-Endpoint for retrieving all news articles:
-https://eu-central-1.aws.data.mongodb-api.com/app/data-owhxg/endpoint/allnews
-
-The function for this endpoint:
-```javascript
-exports = async function() {
-  const collection = context.services.get("Cluster0").db("it-news").collection("articles");
-
-  try {
-    const findResult = await collection.find().sort({ publishing_time: -1 }).limit(10);
-    return findResult;
-  } catch (err) {
-    console.log("Error occurred while executing find operation:", err.message);
-    return err.message;
-  }
-};
-```
-Note that these functions are for demonstration purposes only and are not needed to build the application.
+### Server
+Server side contains a simple CRUD (Create, Read, Update, Delete) API for managing news articles, powered by a MongoDB database. The API is designed to provide a backend service for a news website or application. Examples for each operation are provided in the repository.
+Set up the backend server using PHP and MongoDB. You can configure your MongoDB connection details in a config file.
 
 Thanks for checking out my project! I hope you found it interesting and useful. If you have any questions or suggestions for improvements, feel free to reach out to me.
